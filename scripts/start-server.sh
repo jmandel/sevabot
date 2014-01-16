@@ -13,12 +13,13 @@
 #
 #
 
-DAEMON_USER=skype
+DAEMON_USER=ubuntu
 XSERVERNUM=1
 
 export DISPLAY=:$XSERVERNUM
 
-dnb=`dirname "$0"`
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$DIR/../"
 
 #: Sevabot script location
 seva=`dirname "$0"`/../venv/bin/sevabot
