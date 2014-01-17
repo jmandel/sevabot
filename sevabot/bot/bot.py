@@ -5,6 +5,7 @@ import sys
 import logging
 import hashlib
 import time
+from datetime import datetime
 from collections import OrderedDict
 from inspect import getmembers, isclass
 
@@ -65,7 +66,9 @@ class Sevabot:
         for chat in self.skype.Chats:
 
             # filter chats older than 6 months
-            if time.time() - chat.ActivityTimestamp > 3600 * 24 * 180:
+            timestamp = chat.ActivityTimestamp
+            if time.time() - timestamp > 3600 * 24 * 180:
+                logger.debug("chat %s last activity %s" % (chat.FriendlyName, datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')))
                 continue
 
             chats.append(chat)
@@ -75,7 +78,10 @@ class Sevabot:
         for chat in chats:
             # Encode ids in b64 so they are easier to pass in URLs
             chat_id = get_chat_id(chat)
+            logger.debug("chat %s = %s" % (chat.FriendlyName, chat_id))
             self.chats[chat_id] = chat
+   
+        logger.debug("Async cacheChats() completed")
 
     def getOpenChats(self):
         """
