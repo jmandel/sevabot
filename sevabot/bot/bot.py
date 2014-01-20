@@ -40,7 +40,7 @@ class Sevabot:
         self.skype.Attach()
 
         logger.debug("Skype API connection established")
-        self.skype.OnMessageStatus = self.handleMessages
+        self.skype.RegisterEventHandler('MessageStatus', self.handleMessages)
 
         self.cacheChats()
 
