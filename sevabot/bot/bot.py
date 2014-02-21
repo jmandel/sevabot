@@ -9,6 +9,7 @@ from collections import OrderedDict
 from inspect import getmembers, isclass
 
 import Skype4Py
+from Skype4Py.utils import chop
 
 from sevabot.bot import handlers
 from sevabot.utils import get_chat_id
@@ -39,8 +40,7 @@ class Sevabot:
         self.skype.Attach()
 
         logger.debug("Skype API connection established")
-        self.skype.OnMessageStatus = self.handleMessages
-
+        self.skype.RegisterEventHandler('Notify', self.handleMessages)
         self.cacheChats()
 
         # XXX: Might need refactoring logic here how master handler is registered
@@ -87,15 +87,27 @@ class Sevabot:
         for chat_id, chat in self.chats.items():
             yield chat_id, chat
 
-    def handleMessages(self, msg, status):
+    def handleMessages(self, notification):
         """
         Handle incoming messages.
         """
 
-        logger.debug("Incoming %s - %s - %s: %s" % (status, msg.Chat.FriendlyName,
-                                                    msg.FromHandle, msg.Body))
+        logger.debug(notification)
+        a, b = chop(notification)
+        if a == 'CHAT':
+            object_type, object_id, prop_name, value = [a] + chop(b, 2)
+            skype = self.getSkype()
+            if prop_name == 'ACTIVITY_TIMESTAMP':
+                for message in skype.MissedMessages:
+                    logger.debug('SEEN: %s', message.Body)
+                    message.MarkAsSeen()
+                    self.handler.handle(message, 'RECEIVED')
 
-        self.handler.handle(msg, status)
+        #logger.debug("Incoming %s - %s - %s: %s" % (status, msg.Chat.FriendlyName,
+        #                                            msg.FromHandle, msg.Body))
+
+        #msg.MarkAsSeen()
+        #self.handler.handle(msg, status)
 
     def sendMessage(self, chat, msg):
         """
