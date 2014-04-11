@@ -32,7 +32,7 @@ class Sevabot:
     def start(self):
 
         if sys.platform == "linux2":
-            self.skype = Skype4Py.Skype(Transport='dbus')
+            self.skype = Skype4Py.Skype(Transport='x11')
         else:
             # OSX
             self.skype = Skype4Py.Skype()
