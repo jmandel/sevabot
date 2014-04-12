@@ -36,3 +36,5 @@ LOG_ROTATE_MAX_SIZE = 1024 * 1024
 
 #: Log all HTTP requests for debugging purposes
 DEBUG_HTTP = False
+
+MONGO_URL = "{{mongo_url}}"

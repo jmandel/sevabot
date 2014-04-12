@@ -4,11 +4,28 @@ import re
 import logging
 import shlex
 import settings
+import pymongo
+
+from pymongo import MongoClient
+client = MongoClient(settings.MONGO_URL)
 
 logger = logging.getLogger('sevabot')
+messages = client['fhir-logs'].messages
 
 class ChatLogger(object):
 
     @staticmethod
     def log(msg):
-        print "\n".join(["LOGGING A MESSAGE", str(msg.Id), str(msg.Timestamp), str(msg.EditedTimestamp), msg.Chat.Description, msg.Sender.DisplayName, msg.Sender.FullName, msg.Body.encode('utf-8')])
+        m = {
+            'chat_room_id': msg.Chat.Name,
+            'chat_room_name': msg.Chat.FriendlyName,
+            'message_id': msg.Id,
+            'sent_at': msg.Datetime,
+            'edited': msg.EditedTimestamp > 0 and True or False,
+            'edited_at': msg.EditedDatetime,
+            'user_id': msg.Sender.DisplayName,
+            'user_name': msg.Sender.FullName,
+            'body': msg.Body.encode('utf-8')
+        }
+        messages.insert(m)
+        print "inserted", m, msg.EditedTimestamp
