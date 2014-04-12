@@ -9,6 +9,7 @@ from collections import OrderedDict
 from inspect import getmembers, isclass
 
 import Skype4Py
+from Skype4Py.chat import ChatMessage
 from Skype4Py.utils import chop
 
 from sevabot.bot import handlers
@@ -94,14 +95,21 @@ class Sevabot:
 
         logger.debug(notification)
         a, b = chop(notification)
-        if a == 'CHAT':
+
+        if a in ['CHAT', 'CHATMESSAGE']:
             object_type, object_id, prop_name, value = [a] + chop(b, 2)
             skype = self.getSkype()
-            if prop_name == 'ACTIVITY_TIMESTAMP':
-                for message in skype.MissedMessages:
-                    logger.debug('SEEN: %s', message.Body)
-                    message.MarkAsSeen()
-                    self.handler.handle(message, 'RECEIVED')
+            messages = []
+            if object_type=='CHAT' and prop_name == 'ACTIVITY_TIMESTAMP':
+                messages = skype.MissedMessages
+            elif object_type=='CHATMESSAGE' and prop_name == 'EDITED_TIMESTAMP':
+                messages = [ChatMessage(self.getSkype(), object_id)]
+            for message in messages:
+                logger.debug('SEEN: %s', message.Body)
+                message.MarkAsSeen()
+                logger.debug("simulating receive: "+ str(message))
+                self.handler.handle(message, 'RECEIVED')
+
 
         #logger.debug("Incoming %s - %s - %s: %s" % (status, msg.Chat.FriendlyName,
         #                                            msg.FromHandle, msg.Body))
