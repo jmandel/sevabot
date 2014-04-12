@@ -23,8 +23,8 @@ class ChatLogger(object):
             'sent_at': msg.Datetime,
             'edited': msg.EditedTimestamp > 0 and True or False,
             'edited_at': msg.EditedDatetime,
-            'user_id': msg.Sender.DisplayName,
-            'user_name': msg.Sender.FullName,
+            'user_skypename': msg.Sender.Handle,
+            'user_fullname': msg.Sender.FullName,
             'body': msg.Body.encode('utf-8')
         }
         messages.insert(m)
