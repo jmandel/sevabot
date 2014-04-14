@@ -7,6 +7,7 @@
 
 import json
 import logging
+import re
 
 from hashlib import md5
 
@@ -151,12 +152,15 @@ class GitHubPostCommit(SendMessage):
     def compose(self):
 
         payload = json.loads(request.form["payload"])
-
-        msg = u"(*) %s fresh commits - %s\n" % (payload["repository"]["name"], payload["repository"]["url"])
+        msg = []
         for c in payload["commits"]:
-            msg += u"(*) %s: %s\n%s\n" % (c["author"]["name"], c["message"], c["url"])
-
-        return msg
+            logentry = c["message"].split("git-svn-id")[0].strip()
+            svnrev = re.findall("@\d+",c["message"])
+            if len(svnrev) == 1: svnrev = svnrev[0]
+            else: svnrev = ""
+            if logentry == "": logentry = "No commit msg :-("
+            msg.append(u"%s committed %s: %s" % (c["author"]["name"], svnrev, logentry))
+        return "\n".join(msg)
 		
 class GitHubPullRequest(SendMessage):
     """
