@@ -150,8 +150,8 @@ class GitHubPostCommit(SendMessage):
     """
 
     def compose(self):
-
         payload = json.loads(request.form["payload"])
+        logger.info("got payload:  %s" %(json.dumps(payload, indent=2)))
         msg = []
         for c in payload["commits"]:
             logentry = c["message"].split("git-svn-id")[0].strip()
