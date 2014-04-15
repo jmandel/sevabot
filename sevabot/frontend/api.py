@@ -152,14 +152,24 @@ class GitHubPostCommit(SendMessage):
     def compose(self):
         payload = json.loads(request.form["payload"])
         logger.info("got payload:  %s" %(json.dumps(payload, indent=2)))
+        dirs = set()
         msg = []
         for c in payload["commits"]:
             logentry = c["message"].split("git-svn-id")[0].strip()
+            for f in (c["added"] + c["removed"] + c["modified"]):
+                for d in re.findall("^(.*?)\/", f):
+                    dirs.add(d)
+                for d in re.findall("^(source\/.*?)\/", f):
+                    dirs.add(d)
             svnrev = re.findall("@\d+",c["message"])
             if len(svnrev) == 1: svnrev = svnrev[0]
             else: svnrev = ""
             if logentry == "": logentry = "No commit msg :-("
             msg.append(u"%s committed %s: %s" % (c["author"]["name"], svnrev, logentry))
+        if "source" in dirs and len(dirs)>1:
+            dirs.remove("source")
+        if len(dirs) > 0:
+            msg.append("Changes to: " + ", ".join(sorted(dirs)))
         return "\n".join(msg)
 		
 class GitHubPullRequest(SendMessage):
