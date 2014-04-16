@@ -151,6 +151,10 @@ class GitHubPostCommit(SendMessage):
 
     def compose(self):
         payload = json.loads(request.form["payload"])
+        repo = payload["repository"]["name"]
+        if repo != "fhir-svn":
+            repo = " to *%s*"%repo
+        else: repo = ""
         logger.info("got payload:  %s" %(json.dumps(payload, indent=2)))
         dirs = set()
         msg = []
@@ -165,7 +169,7 @@ class GitHubPostCommit(SendMessage):
             if len(svnrev) == 1: svnrev = svnrev[0]
             else: svnrev = ""
             if logentry == "": logentry = "No commit msg :-("
-            msg.append(u"%s committed %s: %s" % (c["author"]["name"], svnrev, logentry))
+            msg.append(u"%s committed %s%s: %s" % (c["author"]["name"], svnrev, repo, logentry))
         if "source" in dirs and len(dirs)>1:
             dirs.remove("source")
         if len(dirs) > 0:
