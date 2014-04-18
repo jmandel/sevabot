@@ -170,8 +170,6 @@ class GitHubPostCommit(SendMessage):
             else: svnrev = ""
             if logentry == "": logentry = "No commit msg :-("
             msg.append(u"%s committed %s%s: %s" % (c["author"]["name"], svnrev, repo, logentry))
-        if "source" in dirs and len(dirs)>1:
-            dirs.remove("source")
         if len(dirs) > 0:
             msg.append("Changes to: " + ", ".join(sorted(dirs)))
         return "\n".join(msg)
