@@ -158,13 +158,15 @@ class GitHubPostCommit(SendMessage):
         logger.info("got payload:  %s" %(json.dumps(payload, indent=2)))
         dirs = set()
         msg = []
+        detailed_subdirs = ["source", "guides"]
         for c in payload["commits"]:
             logentry = c["message"].split("git-svn-id")[0].strip()
             for f in (c["added"] + c["removed"] + c["modified"]):
                 for d in re.findall("^(.*?)\/", f):
                     dirs.add(d)
-                for d in re.findall("^(source\/.*?)\/", f):
-                    dirs.add(d)
+                for subdir in detailed_subdirs:
+	            for d in re.findall("^(%s\/.*?)\/"%subdir, f):
+        	        dirs.add(d)
             svnrev = re.findall("@\d+",c["message"])
             if len(svnrev) == 1: svnrev = svnrev[0]
             else: svnrev = ""
